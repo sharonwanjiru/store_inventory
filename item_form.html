@@ -1,0 +1,77 @@
+!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add Item</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    form { max-width: 400px; margin-bottom: 20px; }
+    label { display: block; margin-top: 10px; }
+    input, select { width: 100%; padding: 8px; margin-top: 4px; }
+    button { margin-top: 12px; padding: 10px 20px; }
+  </style>
+</head>
+<body>
+  <h1>Add New Inventory Item</h1>
+  <form id="itemForm">
+    <label>Item Name:
+      <input type="text" id="name" required />
+    </label>
+    <label>Quantity:
+      <input type="number" id="quantity" required />
+    </label>
+    <label>Category:
+      <select id="category" required></select>
+    </label>
+    <label>Store Number:
+      <input type="text" id="store_number" required />
+    </label>
+    <label>Date Added:
+      <input type="date" id="date_added" required />
+    </label>
+    <button type="submit">Add Item</button>
+  </form>
+
+  <div id="status"></div>
+
+  <script type="module">
+    // Fetch categories and populate the dropdown
+    async function loadCategories() {
+      const res = await fetch('api/items.php?action=categories');
+      const categories = await res.json();
+      const select = document.getElementById('category');
+      categories.forEach((cat: any) => {
+        const option = document.createElement('option');
+        option.value = cat.id;
+        option.textContent = cat.name;
+        select.appendChild(option);
+      });
+    }
+
+    // Submit form data to the backend
+    document.getElementById('itemForm')!.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const item = {
+        name: (document.getElementById('name') as HTMLInputElement).value,
+        quantity: parseInt((document.getElementById('quantity') as HTMLInputElement).value),
+        category_id: parseInt((document.getElementById('category') as HTMLSelectElement).value),
+        store_number: (document.getElementById('store_number') as HTMLInputElement).value,
+        date_added: (document.getElementById('date_added') as HTMLInputElement).value,
+      };
+
+      const res = await fetch('api/items.php?action=add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item)
+      });
+
+      const result = await res.json();
+      const statusDiv = document.getElementById('status');
+      statusDiv!.textContent = result.success ? 'Item added successfully!' : 'Failed to add item.';
+    });
+
+    loadCategories();
+  </script>
+</body>
+</html>
