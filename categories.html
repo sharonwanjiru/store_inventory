@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add Category</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    form { max-width: 400px; }
+    label, input, button { display: block; width: 100%; margin-top: 10px; }
+    input, button { padding: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Add New Category</h1>
+  <form id="categoryForm">
+    <label>Category Name:
+      <input type="text" id="category_name" required />
+    </label>
+    <button type="submit">Add Category</button>
+  </form>
+  <div id="status"></div>
+
+  <script>
+    document.getElementById('categoryForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('category_name').value;
+
+      const res = await fetch('api/categories.php?action=add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+
+      const result = await res.json();
+      document.getElementById('status').textContent = result.success
+        ? 'Category added successfully!' 
+        : 'Failed to add category.';
+    });
+  </script>
+</body>
+</html>
