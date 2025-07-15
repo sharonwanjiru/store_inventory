@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,33 +9,55 @@
     form { max-width: 400px; }
     label, input, button { display: block; width: 100%; margin-top: 10px; }
     input, button { padding: 8px; }
+    #status { margin-top: 10px; font-weight: bold; }
   </style>
 </head>
 <body>
-  <h1>Add New Category</h1>
-  <form id="categoryForm">
+  <h1>Add Store Category</h1>
+
+  <!-- Form to add a category -->
+  <form id="category_form">
     <label>Category Name:
       <input type="text" id="category_name" required />
     </label>
     <button type="submit">Add Category</button>
   </form>
+
+  <!-- Status message area -->
   <div id="status"></div>
 
   <script>
-    document.getElementById('categoryForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = document.getElementById('category_name').value;
+    // When the form is submitted
+    document.getElementById('category_form').addEventListener('submit', async (e) => {
+      e.preventDefault(); // prevent page reload
 
-      const res = await fetch('api/categories.php?action=add', {
+      // Get the name entered
+      const name = document.getElementById('category_name').value.trim();
+
+      if (!name) {
+        document.getElementById('status').textContent = '❌ Please enter a category name.';
+        return;
+      }
+
+      // Send data to the backend (PHP)
+      const response = await fetch('categories.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name })
+        body: JSON.stringify({ name: name })
       });
 
-      const result = await res.json();
+      // Read JSON response
+      const result = await response.json();
+
+      // Show success/failure message
       document.getElementById('status').textContent = result.success
-        ? 'Category added successfully!' 
-        : 'Failed to add category.';
+        ? '✅ ' + result.message
+        : '❌ ' + result.message;
+
+      // Clear the input if successful
+      if (result.success) {
+        document.getElementById('category_name').value = '';
+      }
     });
   </script>
 </body>
