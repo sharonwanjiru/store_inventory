@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Receive Item</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    form { max-width: 400px; }
+    label { display: block; margin-top: 10px; }
+    input, select { width: 100%; padding: 8px; margin-top: 4px; }
+    button { margin-top: 12px; padding: 10px 20px; }
+    #status { margin-top: 10px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Receive Item</h1>
+  <form id="receiveForm">
+    <label>Item:
+      <select id="item_id" required></select>
+    </label>
+    <label>Quantity:
+      <input type="number" id="quantity" required />
+    </label>
+    <label>Received By:
+      <select id="received_by" required></select>
+    </label>
+    <label>Date Received:
+      <input type="date" id="date_received" required />
+    </label>
+    <button type="submit">Record Receive</button>
+  </form>
+
+  <div id="status"></div>
+
+  <script>
+    async function loadData() {
+      // Load items
+      const itemRes = await fetch('receive.php?action=getItems');
+      const items = await itemRes.json();
+      const itemSelect = document.getElementById('item_id');
+      items.forEach(i => {
+        const option = document.createElement('option');
+        option.value = i.id;
+        option.textContent = i.name;
+        itemSelect.appendChild(option);
+      });
+
+      // Load staff
+      const staffRes = await fetch('receive.php?action=getStaff');
+      const staff = await staffRes.json();
+      const staffSelect = document.getElementById('received_by');
+      staff.forEach(s => {
+        const option = document.createElement('option');
+        option.value = s.id;
+        option.textContent = s.name;
+        staffSelect.appendChild(option);
+      });
+    }
+
+    document.getElementById('receiveForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const data = {
+        item_id: document.getElementById('item_id').value,
+        quantity: document.getElementById('quantity').value,
+        received_by: document.getElementById('received_by').value,
+        date_received: document.getElementById('date_received').value
+      };
+
+      const res = await fetch('receive.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+      document.getElementById('status').textContent = result.success
+        ? '✅ ' + result.message
+        : '❌ ' + result.message;
+    });
+
+    loadData();
+  </script>
+</body>
+</html>
