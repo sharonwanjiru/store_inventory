@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dispatch Item</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    form { max-width: 500px; }
+    label, select, input, button { display: block; width: 100%; margin-top: 10px; }
+    select, input, button { padding: 8px; }
+    #status { margin-top: 12px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Dispatch Item</h1>
+
+  <form id="dispatchForm">
+    <label>Item:
+      <select id="item_id" required></select>
+    </label>
+
+    <label>Quantity:
+      <input type="number" id="quantity" min="1" required />
+    </label>
+
+    <label>Requested By:
+      <select id="requested_by" required></select>
+    </label>
+
+    <label>Approved By:
+      <select id="approved_by" required></select>
+    </label>
+
+    <label>Date Dispatched:
+      <input type="date" id="date_dispatched" required />
+    </label>
+
+    <button type="submit">Record Dispatch</button>
+  </form>
+
+  <div id="status"></div>
+
+  <script>
+    // Fetch items and staff to populate dropdowns
+    async function loadData() {
+      const res = await fetch('dispatch.php?action=fetch');
+      const data = await res.json();
+
+      const itemSelect = document.getElementById('item_id');
+      const staffSelects = [document.getElementById('requested_by'), document.getElementById('approved_by')];
+
+      // Populate items
+      data.items.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.id;
+        opt.textContent = `${item.name} (${item.quantity} available)`;
+        itemSelect.appendChild(opt);
+      });
+
+      // Populate staff dropdowns
+      staffSelects.forEach(select => {
+        data.staff.forEach(staff => {
+          const opt = document.createElement('option');
+          opt.value = staff.id;
+          opt.textContent = `${staff.name} - ${staff.role}`;
+          select.appendChild(opt);
+        });
+      });
+    }
+
+    // Submit dispatch record
+    document.getElementById('dispatchForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const payload = {
+        item_id: document.getElementById('item_id').value,
+        quantity: document.getElementById('quantity').value,
+        requested_by: document.getElementById('requested_by').value,
+        approved_by: document.getElementById('approved_by').value,
+        date_dispatched: document.getElementById('date_dispatched').value
+      };
+
+      const response = await fetch('dispatch.php?action=add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+      document.getElementById('status').textContent = result.success
+        ? '✅ ' + result.message
+        : '❌ ' + result.message;
+
+      if (result.success) {
+        document.getElementById('dispatchForm').reset();
+      }
+    });
+
+    // Load items and staff when page loads
+    loadData();
+  </script>
+</body>
+</html>

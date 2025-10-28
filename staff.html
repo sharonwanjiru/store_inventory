@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add Staff</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    form { max-width: 400px; }
+    label, select, input, button { display: block; width: 100%; margin-top: 10px; }
+    input, select, button { padding: 8px; }
+    #status { margin-top: 10px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Add Staff Member</h1>
+
+  <form id="staffForm">
+    <label>Staff Name:
+      <input type="text" id="name" required />
+    </label>
+
+    <label>Role:
+      <select id="role" required>
+        <option value="">-- Select Role --</option>
+        <option value="Accountant">Accountant</option>
+        <option value="ICT">ICT</option>
+        <option value="Marketing">Marketing</option>
+        <option value="Technician">Technician</option>
+        <option value="Director">Director</option>
+      </select>
+    </label>
+
+    <button type="submit">Add Staff</button>
+  </form>
+
+  <div id="status"></div>
+
+  <script>
+    // Handle form submission
+    document.getElementById('staffForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value.trim();
+      const role = document.getElementById('role').value;
+
+      if (!name || !role) {
+        document.getElementById('status').textContent = '❌ Please fill all fields.';
+        return;
+      }
+
+      // Send data to PHP
+      const response = await fetch('staff.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, role })
+      });
+
+      const result = await response.json();
+      document.getElementById('status').textContent = result.success
+        ? '✅ ' + result.message
+        : '❌ ' + result.message;
+
+      if (result.success) {
+        document.getElementById('staffForm').reset();
+      }
+    });
+  </script>
+</body>
+</html>
